@@ -15,6 +15,9 @@ eye_disease_model = pickle.load(open('Pre-trained_models/eye-disease-pretrained-
 
 image_classification_model = pickle.load(open('Pre-trained_models/image_classifying_preTrained_model.sav','rb'))
 
+cnn_pneumonia_model = pickle.load(open('Pre-trained_models/CNN-Pneumonia.sav','rb'))
+
+
 
 # models prediction function
 # image classification model
