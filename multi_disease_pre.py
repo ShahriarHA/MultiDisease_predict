@@ -122,6 +122,27 @@ def predict_pneumonia_using_CNN(image_path,model):
     prediction = model.predict(img_array)
     return prediction
 
+
+def predict_eye_disease_using_CNN(image_path,model):
+    img_size=150
+    img_path = image_path
+    img = image.load_img(img_path, target_size=(img_size, img_size), color_mode='grayscale')
+    img_array = image.img_to_array(img)
+    img_array = np.expand_dims(img_array, axis=0) 
+
+    # for matching the image shape
+    img_array_rgb = np.concatenate([img_array, img_array, img_array], axis=-1)
+
+    # Preprocess the image
+    img_array_rgb /= 255.0
+    prediction = model.predict(img_array_rgb)
+    return prediction
+
+
+
+
+# load models
+
 def load_pneumonia_cnn_model():
     st.write("# Pneumonia CNN Model")
     # Load Kopil's CNN model and perform predictions
@@ -173,10 +194,33 @@ def load_pneumonia_naive_bayes_model():
     # Load Kopil's naive bayes model and perform predictions
     pass
 
+
 def load_eye_disease_cnn_model():
-    # st.write("# Eye Disease CNN Model Code\n# Your CNN code here")
-    # Load Kopil's CNN model and perform predictions
-    pass
+    st.write("##### CNN Model uses pretrained model")
+    # Loading cnn model and perform predictions
+    eye_disease_image = st.file_uploader('Please uploade your eye-disease image',type=['jpeg','png','jpg'])
+    if eye_disease_image is not None:
+        st.image(eye_disease_image,caption='Uploaded image')
+
+        # checking image class whether it is eye image or not
+        predict_image_class = pre_img_class(eye_disease_image,image_classification_model)
+        if predict_image_class == 1:
+            predicted_class = predict_eye_disease_using_CNN(eye_disease_image,cnn_eye_disease_model)
+            if(predicted_class [0][0] > 0.5):
+                st.error("The image is predicted as Cataract.")
+            elif(predicted_class [0][1] > 0.5):
+                st.error("The image is predicted as Diabetic Retinopethy.")
+            elif(predicted_class [0][2] > 0.5):
+                st.error("The image is predicted as Glaucoma.")
+            elif(predicted_class [0][3] > 0.5):
+                st.success('The image is predicted as Normal.')
+        else:
+            st.warning("Unable to determine the prediction. Because uploaded image is not eye image.")
+    else:
+        st.warning('Please upload a eye-disease image.')
+
+
+
 
 def load_eye_disease_transfer_learning_model():
     st.write("##### Transfer Learning Model useses DenseNet161 pretrained model")
