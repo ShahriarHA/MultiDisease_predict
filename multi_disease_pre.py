@@ -22,6 +22,18 @@ cnn_pneumonia_model = pickle.load(open('Pre-trained_models/CNN-Pneumonia1.sav','
 cnn_eye_disease_model = pickle.load(open('Pre-trained_models/CNN-Eye_disease.sav','rb'))
 
 
+
+
+# Pneumonia_model = pickle.load(open('C:/Users/A S U S/MultiDisease_predict/Pre-trained_models/pneumonia-disease-pretrained-mode.sav','rb'))
+
+# eye_disease_model = pickle.load(open('C:/Users/A S U S/MultiDisease_predict/Pre-trained_models/eye-disease-pretrained-mode.sav','rb'))
+
+# image_classification_model = pickle.load(open('C:/Users/A S U S/MultiDisease_predict/Pre-trained_models/image_classifying_preTrained_model.sav','rb'))
+
+# cnn_pneumonia_model = pickle.load(open('C:/Users/A S U S/MultiDisease_predict/Pre-trained_models/CNN-Pneumonia1.sav','rb'))
+
+# cnn_eye_disease_model = pickle.load(open('C:/Users/A S U S/MultiDisease_predict/Pre-trained_models/CNN-Eye_disease.sav','rb'))
+
 # models prediction function
 # image classification model
 def pre_img_class(image_path,model):
@@ -127,6 +139,14 @@ def load_pneumonia_cnn_model():
             else:
                 # print("Prediction: Not Pneumonia") 
                 st.success('The image is predicted as Normal.')
+        else:
+            st.warning("Unable to determine the prediction. Because uploaded image is not chest X-ray image.")
+    else:
+        st.warning('Please upload a chest x-ray image.')
+
+
+
+
 
 def load_pneumonia_transfer_learning_model():
     st.write("##### Transfer Learning Model useses DenseNet161 pretrained model")
