@@ -1,5 +1,7 @@
+numpy==1.26.3
 Pillow==10.1.0
 Pillow==10.2.0
 streamlit==1.29.0
+tensorflow==2.15.0.post1
 torch==2.1.1
 torchvision==0.16.1

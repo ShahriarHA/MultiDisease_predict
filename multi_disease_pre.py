@@ -1,7 +1,9 @@
 import pickle
 import streamlit as st
 # from streamlit_option_menu import option_menu
-
+import numpy as np
+from tensorflow import keras
+from tensorflow.keras.preprocessing import image
 import torchvision
 from PIL import Image
 import torch
@@ -15,8 +17,9 @@ eye_disease_model = pickle.load(open('Pre-trained_models/eye-disease-pretrained-
 
 image_classification_model = pickle.load(open('Pre-trained_models/image_classifying_preTrained_model.sav','rb'))
 
-cnn_pneumonia_model = pickle.load(open('Pre-trained_models/CNN-Pneumonia.sav','rb'))
+cnn_pneumonia_model = pickle.load(open('Pre-trained_models/CNN-Pneumonia1.sav','rb'))
 
+cnn_eye_disease_model = pickle.load(open('Pre-trained_models/CNN-Eye_disease.sav','rb'))
 
 
 # models prediction function
@@ -97,12 +100,33 @@ def predict_eye_disease_tf(image_path, model):
 
     return predicted_class
 
-
+def predict_pneumonia_using_CNN(image_path,model):
+    img_size=150
+    img_path = image_path
+    img = image.load_img(img_path, target_size=(img_size, img_size), color_mode='grayscale')
+    img_array = image.img_to_array(img)
+    img_array = np.expand_dims(img_array, axis=0) 
+    img_array /= 255.0
+    prediction = model.predict(img_array)
+    return prediction
 
 def load_pneumonia_cnn_model():
-    # st.write("# Pneumonia CNN Model Code\n# Your CNN code here")
+    st.write("# Pneumonia CNN Model")
     # Load Kopil's CNN model and perform predictions
-    pass
+    chest_x_ray_image = st.file_uploader('Please uploade your chest x-ray image',type=['jpeg','png','jpg'])
+    if chest_x_ray_image is not None:
+        st.image(chest_x_ray_image, caption='Uploaded Image.')
+        # checking image class whether it is chest X-ray image
+        predict_image_class = pre_img_class(chest_x_ray_image,image_classification_model)
+        if(predict_image_class == 0):
+            # Predict the class Pneumonia or normal
+            predicted_class = predict_pneumonia_using_CNN(chest_x_ray_image, cnn_pneumonia_model)
+            if predicted_class[0][0] > 0.5:
+                # print("Prediction: Pneumonia")
+                st.error('The image is predicted as Pneumonia.')
+            else:
+                # print("Prediction: Not Pneumonia") 
+                st.success('The image is predicted as Normal.')
 
 def load_pneumonia_transfer_learning_model():
     st.write("##### Transfer Learning Model useses DenseNet161 pretrained model")
