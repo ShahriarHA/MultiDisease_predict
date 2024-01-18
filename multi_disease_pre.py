@@ -10,8 +10,6 @@ import torch
 from torchvision import transforms
 import time
 
-
-
 if "photo" not in st.session_state:
     st.session_state["photo"] ="not done yet"
 
@@ -46,6 +44,8 @@ cnn_pneumonia_model = pickle.load(open('Pre-trained_models/CNN-Pneumonia1.sav','
 
 cnn_eye_disease_model = pickle.load(open('Pre-trained_models/CNN-Eye_disease.sav','rb'))
 
+naive_bayes_pneumonia_model = pickle.load(open('Pre-trained_models/naive_bayes_model_v5_pneumonia.sav','rb'))
+
 
 
 
@@ -58,6 +58,8 @@ cnn_eye_disease_model = pickle.load(open('Pre-trained_models/CNN-Eye_disease.sav
 # cnn_pneumonia_model = pickle.load(open('C:/Users/A S U S/MultiDisease_predict/Pre-trained_models/CNN-Pneumonia1.sav','rb'))
 
 # cnn_eye_disease_model = pickle.load(open('C:/Users/A S U S/MultiDisease_predict/Pre-trained_models/CNN-Eye_disease.sav','rb'))
+
+# naive_bayes_pneumonia_model = pickle.load(open('C:/Users/A S U S/MultiDisease_predict/Pre-trained_models/naive_bayes_model_v5_pneumonia.sav','rb'))
 
 # models prediction function
 # image classification model
@@ -164,6 +166,16 @@ def predict_eye_disease_using_CNN(image_path,model):
     return prediction
 
 
+def predict_pneumonia_using_Naive_Bayes(image_path,model):
+    img = Image.open(image_path).convert('L')  # Convert to grayscale
+    img_resized = img.resize((128, 128))  # Resize for consistency
+    img_array = np.array(img_resized)
+    img_flat = img_array.flatten()
+
+    prediction = model.predict([img_flat])
+    return prediction
+
+
 
 
 # load models
@@ -184,9 +196,6 @@ def load_pneumonia_cnn_model():
             st.image(chest_x_ray_image, caption='Uploaded Image.')
             st.session_state["photo"] ="image uploaded"
            
-            
-
-
         # if st.session_state["check_button"] =="clicked":
         #     st.image(chest_x_ray_image, caption='Uploaded Image.')
         if st.session_state.clicked:
@@ -195,8 +204,6 @@ def load_pneumonia_cnn_model():
             btn = st.button("Check Prediction again")
         else:
             btn = st.button("Check Prediction",on_click=click_button)
-
-
         
         if st.session_state.clicked:
             predict_image_class = pre_img_class(chest_x_ray_image, image_classification_model)
@@ -244,10 +251,57 @@ def load_pneumonia_transfer_learning_model():
     else:
         st.warning('Please upload a chest x-ray image.')
 
+
+
+
+
 def load_pneumonia_naive_bayes_model():
-    # st.write("# Pneumonia Naive Bayes Model Code\n# Your Naive Bayes code here")
-    # Load Kopil's naive bayes model and perform predictions
-    pass
+    st.write("# Pneumonia Naive Bayes Model")
+    # Load Kopil's CNN model and perform predictions
+    btn=False
+    btn_text="check prediction"
+    chest_x_ray_image = st.file_uploader('Please upload your chest x-ray image', type=['jpeg', 'png', 'jpg'], on_change=change_photo_state)
+    
+    if chest_x_ray_image is not None:
+        if st.session_state["photo"] == "done":
+            text = "Image uploading in progress. Please wait..."
+            progress_bar(text)
+            st.image(chest_x_ray_image, caption='Uploaded Image.')
+            st.session_state["photo"] ="image uploaded"
+           
+        # if st.session_state["check_button"] =="clicked":
+        #     st.image(chest_x_ray_image, caption='Uploaded Image.')
+        if st.session_state.clicked:
+            time.sleep(2)
+            st.image(chest_x_ray_image, caption='Uploaded Image.')
+            btn = st.button("Check Prediction again")
+        else:
+            btn = st.button("Check Prediction",on_click=click_button)
+
+        
+        if st.session_state.clicked:
+            predict_image_class = pre_img_class(chest_x_ray_image, image_classification_model)
+            # checking image class whether it is chest X-ray image
+            btn_text="check prediction again"
+            text = "Operation in progress. Please wait for predicted value..."
+            progress_bar(text)
+
+            if predict_image_class == 0:
+                # Predict the class Pneumonia or normal
+                predicted_class = predict_pneumonia_using_Naive_Bayes(chest_x_ray_image, naive_bayes_pneumonia_model)
+                
+                if predicted_class[0] == 1:
+                    st.error('The image is predicted as Pneumonia.')
+                else:
+                    st.success('The image is predicted as Normal.')
+                st.snow()
+            else:
+                st.warning("Unable to determine the prediction. Because uploaded image is not chest X-ray image.")
+    else:
+        st.warning('Please upload a chest x-ray image.')
+
+
+
 
 
 def load_eye_disease_cnn_model():
