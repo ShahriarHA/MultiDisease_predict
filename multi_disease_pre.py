@@ -8,7 +8,32 @@ import torchvision
 from PIL import Image
 import torch
 from torchvision import transforms
+import time
 
+
+
+if "photo" not in st.session_state:
+    st.session_state["photo"] ="not done yet"
+
+if 'clicked' not in st.session_state:
+    st.session_state.clicked = False
+
+def click_button():
+    st.session_state.clicked = True
+
+
+def change_photo_state():
+    st.session_state["photo"] ="done"
+
+def progress_bar(text):
+    progress_text = text
+    my_bar = st.progress(0, text=progress_text)
+
+    for percent_complete in range(100):
+        time.sleep(0.01)
+        my_bar.progress(percent_complete + 1, text=progress_text)
+    time.sleep(0.5)
+    my_bar.empty()
 
 # loading the saved pretrained model
 Pneumonia_model = pickle.load(open('Pre-trained_models/pneumonia-disease-pretrained-mode.sav','rb'))
@@ -143,27 +168,57 @@ def predict_eye_disease_using_CNN(image_path,model):
 
 # load models
 
+
+
 def load_pneumonia_cnn_model():
     st.write("# Pneumonia CNN Model")
     # Load Kopil's CNN model and perform predictions
-    chest_x_ray_image = st.file_uploader('Please uploade your chest x-ray image',type=['jpeg','png','jpg'])
+    btn=False
+    btn_text="check prediction"
+    chest_x_ray_image = st.file_uploader('Please upload your chest x-ray image', type=['jpeg', 'png', 'jpg'], on_change=change_photo_state)
+    
     if chest_x_ray_image is not None:
-        st.image(chest_x_ray_image, caption='Uploaded Image.')
-        # checking image class whether it is chest X-ray image
-        predict_image_class = pre_img_class(chest_x_ray_image,image_classification_model)
-        if(predict_image_class == 0):
-            # Predict the class Pneumonia or normal
-            predicted_class = predict_pneumonia_using_CNN(chest_x_ray_image, cnn_pneumonia_model)
-            if predicted_class[0][0] > 0.5:
-                # print("Prediction: Pneumonia")
-                st.error('The image is predicted as Pneumonia.')
-            else:
-                # print("Prediction: Not Pneumonia") 
-                st.success('The image is predicted as Normal.')
+        if st.session_state["photo"] == "done":
+            text = "Image uploading in progress. Please wait..."
+            progress_bar(text)
+            st.image(chest_x_ray_image, caption='Uploaded Image.')
+            st.session_state["photo"] ="image uploaded"
+           
+            
+
+
+        # if st.session_state["check_button"] =="clicked":
+        #     st.image(chest_x_ray_image, caption='Uploaded Image.')
+        if st.session_state.clicked:
+            time.sleep(2)
+            st.image(chest_x_ray_image, caption='Uploaded Image.')
+            btn = st.button("Check Prediction again")
         else:
-            st.warning("Unable to determine the prediction. Because uploaded image is not chest X-ray image.")
+            btn = st.button("Check Prediction",on_click=click_button)
+
+
+        
+        if st.session_state.clicked:
+            predict_image_class = pre_img_class(chest_x_ray_image, image_classification_model)
+            # checking image class whether it is chest X-ray image
+            btn_text="check prediction again"
+            text = "Operation in progress. Please wait for predicted value..."
+            progress_bar(text)
+
+            if predict_image_class == 0:
+                # Predict the class Pneumonia or normal
+                predicted_class = predict_pneumonia_using_CNN(chest_x_ray_image, cnn_pneumonia_model)
+                
+                if predicted_class[0][0] > 0.5:
+                    st.error('The image is predicted as Pneumonia.')
+                else:
+                    st.success('The image is predicted as Normal.')
+                st.snow()
+            else:
+                st.warning("Unable to determine the prediction. Because uploaded image is not chest X-ray image.")
     else:
         st.warning('Please upload a chest x-ray image.')
+
 
 
 
