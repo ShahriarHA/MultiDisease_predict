@@ -22,6 +22,7 @@ def click_button():
 
 def change_photo_state():
     st.session_state["photo"] ="done"
+    st.session_state.clicked = False
 
 def progress_bar(text):
     progress_text = text
